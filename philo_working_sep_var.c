@@ -10,37 +10,42 @@
 //check with helgrind
 //find a way to remove exit(0)!!!
 // check dead before any action
-struct s_philo
+struct s_private_info
 {
-	pthread_t		*threadph;
-	pthread_t		*death;
-	pthread_mutex_t	*fork_lock;
-	int				*fork_status;
-	pthread_mutex_t	food_lock;
-	pthread_mutex_t	plate_lock;
-	pthread_mutex_t	time_lock;
-	pthread_mutex_t	dead_lock;
 	struct timeval	t1;
-	int				*num_meals;
-	int				dead;
+	int				num_meals;
+	int				last_meal;
 	int				id;
-	int				*last_meal;
-	int				num_phil;
-	int				num_allowed;
-	int				time_start;
-	int				time_die;
-	int				time_eat;
-	int				time_sleep;
-	int				meals;
+
+};
+struct s_shared_info
+{
+	struct s_private_info		*philos;
+	pthread_t					*threadph;
+	//pthread_t					*death;
+	pthread_mutex_t				*fork_lock;
+	pthread_mutex_t				index_lock;
+	pthread_mutex_t				root_lock;
+	pthread_mutex_t				print_lock;
+	pthread_mutex_t				dead_lock;
+	int							index; //shared
+	int							dead;    //shared
+	int							*fork_status; //shared
+	int							num_phil;
+	int							time_start;
+	int							time_die;
+	int							time_eat;
+	int							time_sleep;
+	int							meals;
 };
 
-void	*routine(void *num);
-void	print_status(char *msg, int id, struct s_philo *philos);
-void	grab_chopstick(struct s_philo *philos, int i, int id);
-void	down_chopsticks(struct s_philo *philos, int c1, int c2);
-int		food_on_table(int i, struct s_philo *philo);
-void	get_token(struct s_philo *philos);
-void	return_token(struct s_philo *philos);
+void	*routine(void *data);
+void	print_status(char *msg, int id, struct s_shared_info *dinner_table);
+void	grab_chopstick(struct s_shared_info *dinner_table, int i, int id);
+void	down_chopsticks(struct s_shared_info *dinner_table, int c1, int c2);
+//int		food_on_table(int i, struct s_philo *philo);
+//void	get_token(struct s_philo *philos);
+//void	return_token(struct s_philo *philos);
 
 int	current_time(void)
 {
@@ -87,168 +92,178 @@ void	*check_dead(void *num)
 	return (NULL);
 }
 
-void	*routine(void *num)
+void	*routine(void *data)
 {
-	struct s_philo	*philo;
-	int				id;
+	struct s_shared_info	*dinner_table;
+	int						id;
 
-	philo = num;
-	id = philo->id;
+	dinner_table = data;
+	pthread_mutex_lock(&dinner_table->index_lock);
+	id = dinner_table->index;
+	dinner_table->index++;
+	pthread_mutex_unlock(&dinner_table->index_lock);
     //try ithout offset 
 	if (id % 2 == 1)
 		better_usleep(1);
-	while ((philo->num_meals)[id]++ < philo->meals)
+	while (dinner_table->philos[id].num_meals++ < dinner_table->meals)
 	{
-		while (philo->fork_status[id] && philo->fork_status[id+1%philo->num_phil])
-			better_usleep(1);
-		grab_chopstick(philo, id, id);
-		grab_chopstick(philo, id + 1 % philo->num_phil, id);
-		philo->last_meal[id] = current_time();
-		print_status("is eating", id, philo);
-		better_usleep(philo->time_eat);
-		down_chopsticks(philo, id, id + 1 % philo->num_phil);
-		print_status("is sleeping", id, philo);
-		better_usleep(philo->time_sleep);
-		print_status("is thinking", id, philo);
+		//while (dinner_table->fork_status[id] && dinner_table->fork_status[id+1%dinner_table->num_phil])
+			//better_usleep(1);
+		//eat
+		grab_chopstick(dinner_table, id, id);
+		grab_chopstick(dinner_table, id + 1 % dinner_table->num_phil, id);
+		dinner_table->philos[id].last_meal = current_time();
+		print_status("is eating", id, dinner_table);
+		better_usleep(dinner_table->time_eat);
+		down_chopsticks(dinner_table, id, id + 1 % dinner_table->num_phil);
+		print_status("is sleeping", id, dinner_table);
+		better_usleep(dinner_table->time_sleep);
+		print_status("is thinking", id, dinner_table);
 	}
 	return (NULL);
 }
 
-void	print_status(char *msg, int id, struct s_philo *philo)
+void	print_status(char *msg, int id, struct s_shared_info *dinner_table)
 {
-	if (!philo->dead)
-	{
-		pthread_mutex_lock(&philo->time_lock);
-		printf("%d %d %s\n", (current_time() - philo->time_start), id, msg);
-		pthread_mutex_unlock(&philo->time_lock);
-	}
+	//if (!philo->dead)
+	//{
+		pthread_mutex_lock(&dinner_table->print_lock);
+		printf("%d %d %s\n", (current_time() - dinner_table->time_start), id, msg);
+		pthread_mutex_unlock(&dinner_table->print_lock);
+	//}
 }
-
+/*
 int	food_on_table(int i, struct s_philo *philo)
 {
-	pthread_mutex_lock(&(philo->food_lock));
+	//pthread_mutex_lock(&(philo->food_lock));
 	(philo->num_meals)[i]++;
-	pthread_mutex_unlock(&philo->food_lock);
+	//pthread_mutex_unlock(&philo->food_lock);
 	return (philo->num_meals[i]);
-}
+}*/
 
-void	grab_chopstick(struct s_philo *philo, int i, int id)
+void	grab_chopstick(struct s_shared_info *dinner_table, int i, int id)
 {
-	pthread_mutex_lock(&philo->fork_lock[i]);
-	philo->fork_status[i] = 1;
-	print_status("has taken a fork", id, philo);
+	pthread_mutex_lock(&dinner_table->fork_lock[i]);
+	dinner_table->fork_status[i] = 1;
+	print_status("has taken a fork", id, dinner_table);
 }
 
-void	down_chopsticks(struct s_philo *philos, int c1, int c2)
+void	down_chopsticks(struct s_shared_info *dinner_table, int c1, int c2)
 {
-	philos->fork_status[c1] = 0;
-	philos->fork_status[c2] = 0;
-	pthread_mutex_unlock(&philos->fork_lock[c1]);
-	pthread_mutex_unlock(&philos->fork_lock[c2]);
+	dinner_table->fork_status[c1] = 0;
+	dinner_table->fork_status[c2] = 0;
+	pthread_mutex_unlock(&dinner_table->fork_lock[c1]);
+	pthread_mutex_unlock(&dinner_table->fork_lock[c2]);
 }
 
-int	parse_input(int ac, char **av, struct s_philo *philos)
+int	parse_input(struct s_shared_info *dinner_table, int ac, char **av)
 {
 	if (ac == 5)
-		philos->meals = INT_MAX;
+		dinner_table->meals = INT_MAX;
 	else if (ac == 6 && atoi(av[5]) >= 0)
-		philos->meals = atoi(av[5]);
+		dinner_table->meals = atoi(av[5]);
 	else
 		return (1);
 	if (atoi(av[1]) >= 0 && atoi(av[2]) >= 0
 		&& atoi(av[3]) >= 0 && atoi(av[4]) >= 0)
 	{
-		philos->num_phil = atoi(av[1]);
-		philos->time_die = atoi(av[2]);
-		philos->time_eat = atoi(av[3]);
-		philos->time_sleep = atoi(av[4]);
+		dinner_table->num_phil = atoi(av[1]);
+		dinner_table->time_die = atoi(av[2]);
+		dinner_table->time_eat = atoi(av[3]);
+		dinner_table->time_sleep = atoi(av[4]);
 	}
 	else
 		return (1);
 	return (0);
 }
 
-int	init_philos(struct s_philo *philos)
+int	init_philos(struct s_shared_info *dinner_table)
 {
 	int	i;
 
-	philos->time_start = current_time();
-	philos->dead = 0;
-	philos->threadph = malloc(sizeof(pthread_t) * philos->num_phil);
-	philos->death = malloc(sizeof(pthread_t) * philos->num_phil);
-	philos->fork_lock = malloc(sizeof(pthread_mutex_t) * philos->num_phil);
-	philos->fork_status = malloc(sizeof(int) * philos->num_phil);
-	philos->num_meals = malloc(sizeof(int) * philos->num_phil);
-	philos->last_meal = malloc(sizeof(int) * philos->num_phil);
-	if (!philos->threadph || !philos->death ||!philos->fork_lock
-		|| !philos->num_meals || !philos->last_meal)
+	dinner_table->time_start = current_time();
+	dinner_table->dead = 0;
+	dinner_table->threadph = malloc(sizeof(pthread_t) * dinner_table->num_phil);
+	//philos->death = malloc(sizeof(pthread_t) * philos->num_phil);
+	dinner_table->fork_lock = \
+		malloc(sizeof(pthread_mutex_t) * dinner_table->num_phil);
+	dinner_table->fork_status = malloc(sizeof(int) * dinner_table->num_phil);
+	dinner_table->philos = \
+		malloc(sizeof(struct s_private_info) * dinner_table->num_phil);
+	//philos->num_meals = malloc(sizeof(int) * philos->num_phil);
+	//philos->last_meal = malloc(sizeof(int) * philos->num_phil);
+	if (!dinner_table->threadph || !dinner_table->fork_lock || !dinner_table->fork_status || !dinner_table->philos)
 		return (1);
 	i = 0;
-	while (i < philos->num_phil)
+	while (i < dinner_table->num_phil)
 	{
-		philos->num_meals[i] = 0;
-		philos->fork_status[i] = 0;
-		philos->last_meal[i] = philos->time_start;
+		dinner_table->philos[i].num_meals = 0;
+		dinner_table->fork_status[i] = 0;
+		dinner_table->philos[i].last_meal = dinner_table->time_start;
 		i++;
 	}
 	return (0);
 }
 
-int	init_mutex(struct s_philo *philos)
+int	init_mutex(struct s_shared_info *dinner_table)
 {
 	int	i;
 
-	if (pthread_mutex_init(&philos->food_lock, NULL))
+	if (pthread_mutex_init(&dinner_table->root_lock, NULL))
 		return (1);
-	if (pthread_mutex_init(&philos->time_lock, NULL))
+	if (pthread_mutex_init(&dinner_table->print_lock, NULL))
 		return (1);
-	if (pthread_mutex_init(&philos->plate_lock, NULL))
+	if (pthread_mutex_init(&dinner_table->dead_lock, NULL))
 		return (1);
-	if (pthread_mutex_init(&philos->dead_lock, NULL))
+	if (pthread_mutex_init(&dinner_table->index_lock, NULL))
 		return (1);
 	i = 0;
-	while (i < philos->num_phil)
+	while (i < dinner_table->num_phil)
 	{
-		if (pthread_mutex_init(&philos->fork_lock[i], NULL))
+		if (pthread_mutex_init(&dinner_table->fork_lock[i], NULL))
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-int	create_threads(struct s_philo *philos)
+int	create_threads(struct s_shared_info *dinner_table)
 {
 	int				i;
-	//struct s_philo	*temp;
 
 	i = 0;
-	while (i < philos->num_phil)
+	dinner_table->index = 0;
+	while (i < dinner_table->num_phil)
 	{
-		philos->id = i;
-		if (pthread_create(&philos->threadph[i], NULL, (void *)routine, philos))
-			return (1);
-		i++;
+		pthread_mutex_lock(&dinner_table->root_lock);
+		//if(dinner_table->index == i)
+		//{
+			if (pthread_create(&dinner_table->threadph[i], NULL, routine, dinner_table))
+				return (1);
+			i++;
+		//}
+		pthread_mutex_unlock(&dinner_table->root_lock);
 	}
 	i = 0;
 	//if (pthread_create(&philos->death[i], NULL, (void *)check_dead, philos))
 			//return (1);
-	while (i < philos->num_phil)
+	while (i < dinner_table->num_phil)
 	{
-		if (pthread_join(philos->threadph[i], NULL))
+		if (pthread_join(dinner_table->threadph[i], NULL))
 			return (1);
 		i++;
 	}
 	return (0);
 }
 
-int	destroy_free(struct s_philo *philos)
+int	destroy_free(struct s_shared_info *dinner_table)
 {
 	int	i;
 
 	i = 0;
-	while (i < philos->num_phil)
+	while (i < dinner_table->num_phil)
 	{
-		if (pthread_mutex_destroy(&philos->fork_lock[i]))
+		if (pthread_mutex_destroy(&dinner_table->fork_lock[i]))
 			return (1);
 		i++;
 	}
@@ -263,17 +278,18 @@ int	print_error(char *msg)
 
 int	main(int ac, char **av)
 {
-	struct s_philo	*philos=malloc(sizeof(struct s_philo));
+	struct s_shared_info	*dinner_table;
 
-	if (parse_input(ac, av, philos))
+	dinner_table = malloc(sizeof(struct s_shared_info));
+	if (parse_input(dinner_table, ac, av))
 		return (print_error("invalid argument(s)"));
-	if (init_philos(philos))
+	if (init_philos(dinner_table))
 		return (print_error("malloc error"));
-	if (init_mutex(philos))
+	if (init_mutex(dinner_table))
 		return (print_error("mutex initializing failed"));
-	if (create_threads(philos))
+	if (create_threads(dinner_table))
 		return (print_error("thread creation error"));
-	if (destroy_free(philos))
+	if (destroy_free(dinner_table))
 		return (print_error("mutex destroy failed"));
 	return (0);
 }
