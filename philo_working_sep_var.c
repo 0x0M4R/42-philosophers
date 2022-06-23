@@ -138,7 +138,7 @@ void	*routine(void *data)
 		dinner_table->philos[id].last_meal = current_time();
 		print_status("is eating", id, dinner_table);
 		better_usleep(dinner_table->time_eat);
-		down_chopsticks(dinner_table, id, (id + 1) % dinner_table->num_phil);
+		down_chopsticks(dinner_table, (id + 1) % dinner_table->num_phil, id);
 		}
 		else
 		{
@@ -153,7 +153,7 @@ void	*routine(void *data)
 			dinner_table->philos[id].last_meal = current_time();
 			print_status("is eating", id, dinner_table);
 			better_usleep(dinner_table->time_eat);
-			down_chopsticks(dinner_table, (id + 1) % dinner_table->num_phil, id);
+			down_chopsticks(dinner_table, id, (id + 1) % dinner_table->num_phil);
 		}
 		print_status("is sleeping", id, dinner_table);
 		better_usleep(dinner_table->time_sleep);
