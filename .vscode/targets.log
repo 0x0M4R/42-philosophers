@@ -5,14 +5,13 @@ make all --print-data-base --no-builtin-variables --no-builtin-rules --question
 # License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
 # This is free software: you are free to change and redistribute it.
 # There is NO WARRANTY, to the extent permitted by law.
- 
 
-# Make data base, printed on Mon Jun 20 16:49:03 2022
+# Make data base, printed on Wed Jun 22 18:04:58 2022
 
 # Variables
 
 # environment
-REMOTE_CONTAINERS_SOCKETS = ["/tmp/vscode-ssh-auth-d795cfc077de87a71f3f4052f91c234f9bc089d8.sock"]
+REMOTE_CONTAINERS_SOCKETS = ["/tmp/vscode-ssh-auth-a1342fb146f2ff4d28a00b832b1c821c58c00a86.sock"]
 # environment
 LC_ALL = C
 # environment
@@ -54,13 +53,13 @@ CURDIR := /workspaces/philosophers
 # environment
 VSCODE_PIPE_LOGGING = true
 # environment
-APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = true
+APPLICATION_INSIGHTS_NO_DIAGNOSTIC_CHANNEL = 1
 # automatic
 *D = $(patsubst %/,%,$(dir $*))
 # environment
 MFLAGS = -pqrR
 # environment
-SSH_AUTH_SOCK = /tmp/vscode-ssh-auth-d795cfc077de87a71f3f4052f91c234f9bc089d8.sock
+SSH_AUTH_SOCK = /tmp/vscode-ssh-auth-a1342fb146f2ff4d28a00b832b1c821c58c00a86.sock
 # default
 .SHELLFLAGS := -c
 # automatic
@@ -94,7 +93,7 @@ MAKELEVEL := 0
 # default
 MAKE = $(MAKE_COMMAND)
 # environment
-PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PATH = /vscode/vscode-server/bin/linux-x64/c3511e6c69bb39013c4a4b7b9566ec1ca73fc4d5/bin/remote-cli:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 # default
 MAKEFILES := 
 # automatic
@@ -102,7 +101,7 @@ MAKEFILES :=
 # environment
 VSCODE_LOG_NATIVE = false
 # environment
-REMOTE_CONTAINERS_IPC = /tmp/vscode-remote-containers-ipc-d795cfc077de87a71f3f4052f91c234f9bc089d8.sock
+REMOTE_CONTAINERS_IPC = /tmp/vscode-remote-containers-ipc-a1342fb146f2ff4d28a00b832b1c821c58c00a86.sock
 # environment
 REMOTE_CONTAINERS = true
 # automatic
@@ -130,7 +129,7 @@ VSCODE_AGENT_FOLDER = /root/.vscode-server
 # environment
 _ = /bin/cat
 # environment
-VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-38f64c1e-69c4-4b6d-957c-b1a6af2e6f88.sock
+VSCODE_IPC_HOOK_CLI = /tmp/vscode-ipc-0fa2b6ce-d19a-466f-8a71-e68ca3978f40.sock
 # environment
 VSCODE_AMD_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # environment
@@ -152,9 +151,9 @@ SUFFIXES :=
 
 # Directories
 
-# . (device 120, inode 36160052): 16 files, no impossibilities.
+# . (device 120, inode 36160052): 17 files, no impossibilities.
 
-# 16 files, no impossibilities in 1 directories.
+# 17 files, no impossibilities in 1 directories.
 
 # Implicit Rules
 
@@ -201,7 +200,7 @@ fclean: clean
 
 philo:
 #  Implicit rule search has not been done.
-#  Last modified 2022-06-20 16:48:45.475136537
+#  Last modified 2022-06-22 18:01:52.449755436
 #  File has been updated.
 #  Successfully updated.
 #  recipe to execute (from 'Makefile', line 7):
@@ -215,12 +214,12 @@ philo:
 
 # No general ('VPATH' variable) search path.
 
-# strcache buffers: 1 (0) / strings = 24 / storage = 239 B / avg = 9 B
-# current buf: size = 8162 B / used = 239 B / count = 24 / avg = 9 B
+# strcache buffers: 1 (0) / strings = 25 / storage = 244 B / avg = 9 B
+# current buf: size = 8162 B / used = 244 B / count = 25 / avg = 9 B
 
-# strcache performance: lookups = 39 / hit rate = 38%
+# strcache performance: lookups = 40 / hit rate = 37%
 # hash-table stats:
-# Load=24/8192=0%, Rehash=0, Collisions=0/39=0%
-# Finished Make data base on Mon Jun 20 16:49:03 2022
+# Load=25/8192=0%, Rehash=0, Collisions=0/40=0%
+# Finished Make data base on Wed Jun 22 18:04:58 2022
 
  
