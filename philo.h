@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: oabdalla <oabdalla@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/06/30 16:23:41 by oabdalla          #+#    #+#             */
+/*   Updated: 2022/06/30 16:23:54 by oabdalla         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO_H
 # define PHILO_H
 # include <stdio.h>
@@ -43,7 +55,8 @@ int		init_philos(struct s_shared_info *dinner_table);
 int		init_mutex(struct s_shared_info *dinner_table);
 int		create_threads(struct s_shared_info *dinner_table);
 void	*routine(void *data);
-void	do_life(struct s_shared_info *dinner_table, int left, int right, int id);
+void	do_life(struct s_shared_info *dinner_table, int left, \
+				int right, int id);
 void	*check_dead(void *data);
 void	done_eating(struct s_shared_info *dinner_table, int id);
 int		is_done(struct s_shared_info *dinner_table, int i);
