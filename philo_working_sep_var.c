@@ -38,12 +38,14 @@ struct s_shared_info
 	int							time_eat;
 	int							time_sleep;
 	int							meals;
+	int							*done;
 };
 
 void	*routine(void *data);
 void	print_status(char *msg, int id, struct s_shared_info *dinner_table);
 void	grab_chopstick(struct s_shared_info *dinner_table, int i, int id);
 void	down_chopsticks(struct s_shared_info *dinner_table, int c1, int c2);
+int is_dead(struct s_shared_info *dinner_table);
 //int		food_on_table(int i, struct s_philo *philo);
 //void	get_token(struct s_philo *philos);
 //void	return_token(struct s_philo *philos);
@@ -71,19 +73,27 @@ void	*check_dead(void *data)
 	int i;
 
 	dinner_table = data;
-	while (!dinner_table->dead)
+	while (1)
 	{
 		i=0;
-		while (!dinner_table->dead && i < dinner_table->num_phil && dinner_table->philos[i].num_meals< dinner_table->meals)
+		while (i < dinner_table->num_phil)
 		{
-			if ((current_time() - dinner_table->philos[i].last_meal) >= dinner_table->time_die)
+			pthread_mutex_lock(dinner_table->root_lock);
+			//pthread_mutex_lock(dinner_table->index_lock);
+			if ((current_time() - dinner_table->philos[i].last_meal) >= dinner_table->time_die && !dinner_table->done[i])
 			{
+				//pthread_mutex_unlock(dinner_table->index_lock);
+				pthread_mutex_unlock(dinner_table->root_lock);
 				pthread_mutex_lock(dinner_table->dead_lock);
+
 				print_status("died", i, dinner_table);
 				dinner_table->dead = 1;
 				pthread_mutex_unlock(dinner_table->dead_lock);
-				exit(0);
+				return NULL;
 			}
+			pthread_mutex_unlock(dinner_table->root_lock);
+			//pthread_mutex_unlock(dinner_table->index_lock);
+			better_usleep(1);
 			i++;
 		}
 	}
@@ -115,6 +125,17 @@ void get_token(struct s_shared_info *dinner_table)
         pthread_mutex_unlock(dinner_table->root_lock);
     }
 }
+int is_dead(struct s_shared_info *dinner_table)
+{
+	pthread_mutex_lock(dinner_table->dead_lock);
+		if(dinner_table->dead)
+		{
+			pthread_mutex_unlock(dinner_table->dead_lock);
+				return 1;
+		}
+		pthread_mutex_unlock(dinner_table->dead_lock);
+	return 0;
+}
 void	*routine(void *data)
 {
 	struct s_shared_info	*dinner_table;
@@ -125,26 +146,39 @@ void	*routine(void *data)
 	id = dinner_table->index;
 	dinner_table->index++;
 	pthread_mutex_unlock(dinner_table->index_lock);
-	while (dinner_table->philos[id].num_meals++ < dinner_table->meals)
+	if (id % 2 == 1)
+		better_usleep(dinner_table->time_eat * 0.9 + 1);
+	while (dinner_table->philos[id].num_meals++ < dinner_table->meals && dinner_table->num_phil > 1)
 	{
-		//get_token(dinner_table);
-		if(id != dinner_table->num_phil - 1)
+		if(is_dead(dinner_table))
+			break;
+		if(id == dinner_table->num_phil - 1)
 		{
+			if(!is_dead(dinner_table))
+			{
 			pthread_mutex_lock(&dinner_table->fork_lock[id]);
-			pthread_mutex_lock(&dinner_table->fork_lock[(id + 1) % dinner_table->num_phil]);
-			while (dinner_table->fork_status[id] && dinner_table->fork_status[id+1%dinner_table->num_phil])
+			while (dinner_table->fork_status[id])
 				better_usleep(1);
-			pthread_mutex_unlock(&dinner_table->fork_lock[(id + 1) % dinner_table->num_phil]);
 			pthread_mutex_unlock(&dinner_table->fork_lock[id]);
 			grab_chopstick(dinner_table, id, id);
+			pthread_mutex_lock(&dinner_table->fork_lock[(id + 1) % dinner_table->num_phil]);
+			while (dinner_table->fork_status[id+1%dinner_table->num_phil])
+				better_usleep(1);
+			pthread_mutex_unlock(&dinner_table->fork_lock[(id + 1) % dinner_table->num_phil]);
 			grab_chopstick(dinner_table, ((id + 1) % dinner_table->num_phil), id);
+			pthread_mutex_lock(dinner_table->root_lock);
 			dinner_table->philos[id].last_meal = current_time();
-			print_status("is eating", id, dinner_table);
+			pthread_mutex_unlock(dinner_table->root_lock);
+			}
+			if(!is_dead(dinner_table))
+				print_status("is eating", id, dinner_table);
 			better_usleep(dinner_table->time_eat);
 			down_chopsticks(dinner_table, (id + 1) % dinner_table->num_phil, id);
 		}
 		else
 		{
+			if(!is_dead(dinner_table))
+			{
 			pthread_mutex_lock(&dinner_table->fork_lock[(id + 1) % dinner_table->num_phil]);
 			pthread_mutex_lock(&dinner_table->fork_lock[id]);
 			while (dinner_table->fork_status[id] && dinner_table->fork_status[id+1%dinner_table->num_phil])
@@ -153,15 +187,26 @@ void	*routine(void *data)
 			pthread_mutex_unlock(&dinner_table->fork_lock[(id + 1) % dinner_table->num_phil]);
 			grab_chopstick(dinner_table, ((id + 1) % dinner_table->num_phil), id);
 			grab_chopstick(dinner_table, id, id);
+			pthread_mutex_lock(dinner_table->root_lock);
 			dinner_table->philos[id].last_meal = current_time();
-			print_status("is eating", id, dinner_table);
+			pthread_mutex_unlock(dinner_table->root_lock);
+			}
+			if(!is_dead(dinner_table))
+				print_status("is eating", id, dinner_table);
 			better_usleep(dinner_table->time_eat);
 			down_chopsticks(dinner_table, id, (id + 1) % dinner_table->num_phil);
 		}
-		print_status("is sleeping", id, dinner_table);
+		if(!is_dead(dinner_table))
+			print_status("is sleeping", id, dinner_table);
 		better_usleep(dinner_table->time_sleep);
-		print_status("is thinking", id, dinner_table);
+		if(!is_dead(dinner_table))
+			print_status("is thinking", id, dinner_table);
 	}
+	/*
+	pthread_mutex_lock(dinner_table->index_lock);
+	dinner_table->done[id]=1;
+	pthread_mutex_unlock(dinner_table->index_lock);
+	print_status("is done", id, dinner_table);*/
 	return (NULL);
 }
 
@@ -185,9 +230,12 @@ int	food_on_table(int i, struct s_philo *philo)
 
 void	grab_chopstick(struct s_shared_info *dinner_table, int i, int id)
 {
+	//if(!dinner_table->dead)
+	//{
 	pthread_mutex_lock(&dinner_table->fork_lock[i]);
 	dinner_table->fork_status[i] = 1;
 	print_status("has taken a fork", id, dinner_table);
+	//}
 }
 
 void	down_chopsticks(struct s_shared_info *dinner_table, int c1, int c2)
@@ -229,12 +277,12 @@ int	init_philos(struct s_shared_info *dinner_table)
 	dinner_table->threadph = malloc(sizeof(pthread_t) * dinner_table->num_phil);
 	dinner_table->death = malloc(sizeof(pthread_t));
 	dinner_table->fork_lock = malloc(sizeof(pthread_mutex_t) * dinner_table->num_phil);
-
 	dinner_table->root_lock = malloc(sizeof(pthread_mutex_t));
 	dinner_table->print_lock = malloc(sizeof(pthread_mutex_t));
 	dinner_table->dead_lock = malloc(sizeof(pthread_mutex_t));
 	dinner_table->index_lock = malloc(sizeof(pthread_mutex_t));
 	dinner_table->fork_status = malloc(sizeof(int) * dinner_table->num_phil);
+	dinner_table->done = malloc(sizeof(int) * dinner_table->num_phil);
 	dinner_table->philos = \
 		malloc(sizeof(struct s_private_info) * dinner_table->num_phil);
 	//philos->num_meals = malloc(sizeof(int) * philos->num_phil);
@@ -247,7 +295,8 @@ int	init_philos(struct s_shared_info *dinner_table)
 		//dinner_table->fork_lock[i] = malloc(sizeof(pthread_mutex_t));
 		dinner_table->philos[i].num_meals = 0;
 		dinner_table->fork_status[i] = 0;
-		dinner_table->philos[i].last_meal = dinner_table->time_start;
+		dinner_table->philos[i].last_meal = current_time();
+		dinner_table->done[i] = 0;
 		i++;
 	}
 	return (0);
@@ -301,6 +350,8 @@ int	create_threads(struct s_shared_info *dinner_table)
 			return (1);
 		i++;
 	}
+	if (pthread_join(*dinner_table->death, NULL))
+			return (1);
 	return (0);
 }
 
