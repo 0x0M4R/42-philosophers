@@ -22,6 +22,7 @@ struct s_shared_info
 	pthread_t					death;
 	pthread_mutex_t				*fork_lock;
 	pthread_mutex_t				index_lock;
+	pthread_mutex_t				token_lock;
 	pthread_mutex_t				meal_lock;
 	pthread_mutex_t				print_lock;
 	pthread_mutex_t				dead_lock;

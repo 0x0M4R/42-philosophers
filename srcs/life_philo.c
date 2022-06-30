@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   life_philo.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: oabdalla <oabdalla@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/06/30 16:22:02 by oabdalla          #+#    #+#             */
+/*   Updated: 2022/06/30 16:22:03 by oabdalla         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 void	*routine(void *data)
@@ -13,7 +25,7 @@ void	*routine(void *data)
 	pthread_mutex_unlock(&dinner_table->index_lock);
 	right = (id + 1) % dinner_table->num_phil;
 	if (id % 2 == 1)
-		better_usleep(dinner_table->time_eat * 0.95);
+		better_usleep(dinner_table->time_eat * 0.5);
 	while (dinner_table->philos[id].num_meals++ < dinner_table->meals \
 	&& dinner_table->num_phil > 1)
 	{

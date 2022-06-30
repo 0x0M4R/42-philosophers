@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init_philo.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: oabdalla <oabdalla@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/06/30 16:22:08 by oabdalla          #+#    #+#             */
+/*   Updated: 2022/06/30 16:22:09 by oabdalla         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 int	init_philos(struct s_shared_info *dinner_table)
@@ -40,6 +52,8 @@ int	init_mutex(struct s_shared_info *dinner_table)
 	if (pthread_mutex_init(&dinner_table->dead_lock, NULL))
 		return (1);
 	if (pthread_mutex_init(&dinner_table->index_lock, NULL))
+		return (1);
+	if (pthread_mutex_init(&dinner_table->token_lock, NULL))
 		return (1);
 	i = 0;
 	while (i < dinner_table->num_phil)

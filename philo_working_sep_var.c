@@ -112,8 +112,8 @@ void	*routine(void *data)
 	dinner_table->index++;
 	pthread_mutex_unlock(&dinner_table->index_lock);
 	right = (id + 1) % dinner_table->num_phil;
-	if (id % 2 == 1)
-		better_usleep(dinner_table->time_eat * 0.9 + 1);
+	//if (id % 2 == 1)
+		//better_usleep(dinner_table->time_eat * 0.9 + 1);
 	while (dinner_table->philos[id].num_meals++ < dinner_table->meals && dinner_table->num_phil > 1)
 	{
 		if (!is_dead(dinner_table))

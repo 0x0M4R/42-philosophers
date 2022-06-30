@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: oabdalla <oabdalla@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/06/30 16:21:52 by oabdalla          #+#    #+#             */
+/*   Updated: 2022/06/30 16:21:53 by oabdalla         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 int	parse_input(struct s_shared_info *dinner_table, int ac, char **av)
@@ -36,6 +48,7 @@ int	destroy_free(struct s_shared_info *dinner_table)
 	pthread_mutex_destroy(&dinner_table->meal_lock);
 	pthread_mutex_destroy(&dinner_table->print_lock);
 	pthread_mutex_destroy(&dinner_table->dead_lock);
+	pthread_mutex_destroy(&dinner_table->token_lock);
 	free(dinner_table->fork_lock);
 	free(dinner_table->fork_status);
 	free(dinner_table->done);
