@@ -1,0 +1,14 @@
+SRCS	= srcs/push_swap.c srcs/linked_lists.c srcs/operations.c srcs/misc_functions.c srcs/parse.c srcs/sort_bits.c srcs/sort_small.c srcs/ft_split.c
+
+NAME = push_swap
+OBJS = ${SRCS:.c=.o}
+
+all:	${NAME}
+
+${NAME}:
+	gcc  -Wall -Wextra -Werror -I. ${SRCS} -o ${NAME}
+clean:
+	rm -f ${NAME}
+fclean:	clean
+
+re:	fclean all
