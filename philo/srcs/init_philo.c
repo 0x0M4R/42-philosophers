@@ -6,7 +6,7 @@
 /*   By: oabdalla <oabdalla@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/30 16:22:08 by oabdalla          #+#    #+#             */
-/*   Updated: 2022/06/30 16:22:09 by oabdalla         ###   ########.fr       */
+/*   Updated: 2022/07/01 10:37:53 by oabdalla         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ int	init_philos(struct s_shared_info *dinner_table)
 
 	dinner_table->time_start = current_time();
 	dinner_table->dead = 0;
-	dinner_table->num_orders = dinner_table->num_phil - 1;
 	dinner_table->threadph = malloc(sizeof(pthread_t) * dinner_table->num_phil);
 	dinner_table->fork_lock = malloc(sizeof(pthread_mutex_t) \
 								* dinner_table->num_phil);
@@ -52,8 +51,6 @@ int	init_mutex(struct s_shared_info *dinner_table)
 	if (pthread_mutex_init(&dinner_table->dead_lock, NULL))
 		return (1);
 	if (pthread_mutex_init(&dinner_table->index_lock, NULL))
-		return (1);
-	if (pthread_mutex_init(&dinner_table->token_lock, NULL))
 		return (1);
 	i = 0;
 	while (i < dinner_table->num_phil)

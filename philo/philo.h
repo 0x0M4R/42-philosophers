@@ -6,7 +6,7 @@
 /*   By: oabdalla <oabdalla@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/30 16:23:41 by oabdalla          #+#    #+#             */
-/*   Updated: 2022/06/30 16:23:54 by oabdalla         ###   ########.fr       */
+/*   Updated: 2022/07/01 10:37:45 by oabdalla         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@ struct s_shared_info
 	pthread_t					death;
 	pthread_mutex_t				*fork_lock;
 	pthread_mutex_t				index_lock;
-	pthread_mutex_t				token_lock;
 	pthread_mutex_t				meal_lock;
 	pthread_mutex_t				print_lock;
 	pthread_mutex_t				dead_lock;
@@ -42,7 +41,6 @@ struct s_shared_info
 	int							dead;
 	int							*fork_status;
 	int							num_phil;
-	int							num_orders;
 	int							time_start;
 	int							time_die;
 	int							time_eat;
