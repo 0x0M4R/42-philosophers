@@ -6,9 +6,11 @@ OBJS = ${SRCS:.c=.o}
 all:	${NAME}
 
 ${NAME}:
-	gcc -g -Wall -Wextra -Werror -pthread -I. ${SRCS} -o ${NAME}
+	gcc -Wall -Wextra -Werror -pthread -I. ${SRCS} -o ${NAME}
+
 clean:
 	rm -f ${NAME}
+
 fclean:	clean
 
 re:	fclean all

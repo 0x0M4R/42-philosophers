@@ -1,5 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory '/workspaces/philosophers'
-gcc -g -Wall -Wextra -Werror -pthread -I. philo_working_sep_var.c  -o philo
-make: Leaving directory '/workspaces/philosophers'
- 
